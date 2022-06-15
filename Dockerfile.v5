@@ -1,0 +1,40 @@
+# java -Djarmode=layertools -jar target/spring-petclinic-2.5.0-SNAPSHOT.jar extract --destination target/layers
+# podman build -t petclinic:v2 -f Dockerfile.v2 .
+# podman run --rm petclinic:v2
+
+FROM alpine:3.14 as builder
+
+RUN apk add openjdk11
+
+RUN jlink \
+    --add-modules java.sql,java.naming,java.management,java.instrument,java.security.jgss,java.desktop,jdk.unsupported \
+    --verbose \
+    --strip-debug \
+    --compress 2 \
+    --no-header-files \
+    --no-man-pages \
+    --output /opt/jre-minimal
+
+FROM alpine:3.14
+
+LABEL maintainer="benjamin.vouillaume@wescale.fr"
+
+WORKDIR /opt/
+
+COPY --from=builder /opt/jre-minimal /opt/jre-minimal
+
+ENV LANG=C.UTF-8 \
+    PATH=${PATH}:/opt/jre-minimal/bin
+
+EXPOSE 8080
+
+ENTRYPOINT ["java"]
+
+CMD ["org.springframework.boot.loader.JarLauncher"]
+
+ENV spring.profiles.active=
+
+COPY ./target/layers/dependencies/ ./
+COPY ./target/layers/snapshot-dependencies/ ./
+COPY ./target/layers/spring-boot-loader/ ./
+COPY ./target/layers/application/ ./

@@ -1,0 +1,22 @@
+# java -Djarmode=layertools -jar target/spring-petclinic-2.5.0-SNAPSHOT.jar extract --destination target/layers
+# podman build -t petclinic:v2 -f Dockerfile.v2 .
+# podman run --rm petclinic:v2
+
+FROM openjdk:11-jre-slim
+
+LABEL maintainer="benjamin.vouillaume@wescale.fr"
+
+WORKDIR /opt/
+
+EXPOSE 8080
+
+ENTRYPOINT ["java"]
+
+CMD ["org.springframework.boot.loader.JarLauncher"]
+
+ENV spring.profiles.active=
+
+COPY ./target/layers/dependencies/ ./
+COPY ./target/layers/snapshot-dependencies/ ./
+COPY ./target/layers/spring-boot-loader/ ./
+COPY ./target/layers/application/ ./

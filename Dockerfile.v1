@@ -1,0 +1,19 @@
+# mvn clean verify -DskipTests
+# podman build -t petclinic:v1 -f Dockerfile.v1 .
+# podman run --rm petclinic:v1
+
+FROM openjdk:11-jre-slim
+
+LABEL maintainer="benjamin.vouillaume@wescale.fr"
+
+WORKDIR /opt/
+
+EXPOSE 8080
+
+ENTRYPOINT ["java"]
+
+CMD ["-jar", "spring-petclinic.jar"]
+
+ENV spring.profiles.active=
+
+COPY ./target/spring-petclinic-*.jar ./spring-petclinic.jar
